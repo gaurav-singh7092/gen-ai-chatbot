@@ -11,6 +11,13 @@ DIRECTION_ROOT = "https://about.gitlab.com/direction/"
 ALLOWED_ROOTS = (HANDBOOK_ROOT, DIRECTION_ROOT)
 
 
+def _clean_optional(value: str | None) -> str | None:
+    if value is None:
+        return None
+    cleaned = value.strip()
+    return cleaned or None
+
+
 class Settings:
     def __init__(
         self,
@@ -25,9 +32,9 @@ class Settings:
         retrieval_k: int = 5,
     ) -> None:
         self.index_path = index_path
-        self.openai_api_key = openai_api_key if openai_api_key is not None else os.getenv("OPENAI_API_KEY")
-        self.openai_model = openai_model if openai_model is not None else os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-        self.openai_base_url = openai_base_url if openai_base_url is not None else (os.getenv("OPENAI_BASE_URL") or None)
+        self.openai_api_key = _clean_optional(openai_api_key) or _clean_optional(os.getenv("OPENAI_API_KEY"))
+        self.openai_model = _clean_optional(openai_model) or os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+        self.openai_base_url = _clean_optional(openai_base_url) or _clean_optional(os.getenv("OPENAI_BASE_URL"))
         self.max_pages_default = max_pages_default
         self.request_timeout_seconds = request_timeout_seconds
         self.chunk_size = chunk_size

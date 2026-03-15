@@ -11,11 +11,18 @@ from gitlab_handbook_bot.indexer import build_index
 load_dotenv()
 
 
+def _clean_optional(value: str | None) -> str | None:
+    if value is None:
+        return None
+    cleaned = str(value).strip()
+    return cleaned or None
+
+
 def build_settings() -> Settings:
     settings = Settings()
-    settings.openai_api_key = st.secrets.get("OPENAI_API_KEY", settings.openai_api_key)
-    settings.openai_model = st.secrets.get("OPENAI_MODEL", settings.openai_model)
-    settings.openai_base_url = st.secrets.get("OPENAI_BASE_URL", settings.openai_base_url)
+    settings.openai_api_key = _clean_optional(st.secrets.get("OPENAI_API_KEY")) or settings.openai_api_key
+    settings.openai_model = _clean_optional(st.secrets.get("OPENAI_MODEL")) or settings.openai_model
+    settings.openai_base_url = _clean_optional(st.secrets.get("OPENAI_BASE_URL")) or settings.openai_base_url
     return settings
 
 st.set_page_config(
