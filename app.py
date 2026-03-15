@@ -56,6 +56,13 @@ def apply_styles() -> None:
             background: rgba(255, 255, 255, 0.74);
             border: 1px solid rgba(54, 69, 79, 0.08);
             border-radius: 18px;
+            color: #1a1a1a !important;
+        }
+        div[data-testid="stChatMessage"] p,
+        div[data-testid="stChatMessage"] li,
+        div[data-testid="stChatMessage"] span,
+        div[data-testid="stChatMessage"] a {
+            color: #1a1a1a !important;
         }
         div[data-testid="stSidebar"] {
             background: linear-gradient(180deg, #163127 0%, #21473a 100%);
