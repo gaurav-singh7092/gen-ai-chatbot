@@ -10,6 +10,14 @@ from gitlab_handbook_bot.indexer import build_index
 
 load_dotenv()
 
+
+def build_settings() -> Settings:
+    settings = Settings()
+    settings.openai_api_key = st.secrets.get("OPENAI_API_KEY", settings.openai_api_key)
+    settings.openai_model = st.secrets.get("OPENAI_MODEL", settings.openai_model)
+    settings.openai_base_url = st.secrets.get("OPENAI_BASE_URL", settings.openai_base_url)
+    return settings
+
 st.set_page_config(
     page_title="GitLab Handbook Guide",
     page_icon="GL",
@@ -87,8 +95,17 @@ def init_state() -> None:
                 ),
             }
         ]
-    if "chatbot" not in st.session_state:
-        st.session_state.chatbot = GitLabHandbookChatbot(Settings())
+    settings = build_settings()
+    settings_signature = (
+        bool(settings.openai_api_key),
+        settings.openai_model,
+        settings.openai_base_url,
+        str(settings.index_path),
+    )
+
+    if "chatbot" not in st.session_state or st.session_state.get("settings_signature") != settings_signature:
+        st.session_state.chatbot = GitLabHandbookChatbot(settings)
+        st.session_state.settings_signature = settings_signature
     if "last_sources" not in st.session_state:
         st.session_state.last_sources = []
 

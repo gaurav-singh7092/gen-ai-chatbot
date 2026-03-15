@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
@@ -17,9 +17,9 @@ ALLOWED_ROOTS = (HANDBOOK_ROOT, DIRECTION_ROOT)
 @dataclass(slots=True)
 class Settings:
     index_path: Path = DEFAULT_INDEX_PATH
-    openai_api_key: str | None = os.getenv("OPENAI_API_KEY")
-    openai_model: str = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
-    openai_base_url: str | None = os.getenv("OPENAI_BASE_URL") or None
+    openai_api_key: str | None = field(default_factory=lambda: os.getenv("OPENAI_API_KEY"))
+    openai_model: str = field(default_factory=lambda: os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
+    openai_base_url: str | None = field(default_factory=lambda: os.getenv("OPENAI_BASE_URL") or None)
     max_pages_default: int = 30
     request_timeout_seconds: float = 20.0
     chunk_size: int = 1200

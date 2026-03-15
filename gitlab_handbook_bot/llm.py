@@ -48,8 +48,8 @@ def generate_answer(settings: Settings, question: str, history: list[dict[str, s
                 },
             ],
         )
-    except APIError:
-        return fallback_answer(question=question, chunks=chunks)
+    except APIError as error:
+        return fallback_answer(question=question, chunks=chunks, llm_error=str(error))
     return response.output_text.strip()
 
 
@@ -60,20 +60,37 @@ def format_history(history: list[dict[str, str]]) -> str:
     return "\n".join(lines)
 
 
-def fallback_answer(question: str, chunks: list[RetrievedChunk]) -> str:
+def fallback_answer(question: str, chunks: list[RetrievedChunk], llm_error: str | None = None) -> str:
     if not chunks:
         return (
             "I could not find enough indexed GitLab Handbook or Direction content to answer that yet. "
             "Build the index first, or widen the crawl scope."
         )
 
-    summary_lines = [
-        "No LLM API key is configured, so this is a grounded retrieval-only answer.",
-        f"The question was: {question}",
-        "Most relevant evidence:",
-    ]
-    for item in chunks[:3]:
-        excerpt = item.chunk.content[:300].strip()
-        summary_lines.append(f"- {item.chunk.title}: {excerpt}...")
+    summary_lines = []
+    if llm_error:
+        summary_lines.append(
+            "The LLM request failed, so I returned a retrieval-only answer. "
+            "Check OPENAI_API_KEY, OPENAI_MODEL, and OPENAI_BASE_URL settings."
+        )
+        summary_lines.append(f"LLM error: {llm_error}")
+    else:
+        summary_lines.append("No LLM API key is configured, so this is a grounded retrieval-only answer.")
+
+    summary_lines.append(f"Question: {question}")
+    summary_lines.append("Most relevant evidence:")
+
+    seen_urls: set[str] = set()
+    for item in chunks:
+        if item.chunk.url in seen_urls:
+            continue
+        seen_urls.add(item.chunk.url)
+        excerpt = " ".join(item.chunk.content.split())[:220].rstrip()
+        if not excerpt.endswith("."):
+            excerpt += "..."
+        summary_lines.append(f"- {item.chunk.title}")
+        summary_lines.append(f"  Evidence: {excerpt}")
         summary_lines.append(f"  Source: {item.chunk.url}")
+        if len(seen_urls) >= 3:
+            break
     return "\n".join(summary_lines)
