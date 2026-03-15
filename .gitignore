@@ -1,0 +1,16 @@
+.venv/
+.venv-py314/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.streamlit/secrets.toml
+.env
+data/*.json
+data/*.jsonl
+data/*.pkl
+dist/
+build/
+.DS_Store
